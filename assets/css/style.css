@@ -1,0 +1,63 @@
+body {
+    font-family: "Courier New", Courier, monospace;
+}
+
+#cards {
+    margin: 0 auto;
+    width: 90%;
+}
+
+.card {
+    position: relative;
+    width: 550px;
+    height: 200px;
+    float: left;
+    box-shadow: 1px 2px 5px 0 rgba(0, 0, 0, 0.75);
+    background-color: #fafafa;
+    border-radius: 4px;
+    margin: 20px;
+    opacity: 0.4;
+    transition: opacity 0.3s linear;
+}
+
+.card:hover {
+    opacity: 1;
+}
+
+.card img {
+    position: absolute;
+    top: 34px;
+    left: 30px;
+    width: 128px;
+    height: 128px;
+    border-radius: 128px;
+    border: 2px solid white;
+}
+
+.card > div.title {
+    position: absolute;
+    top: 56px;
+    left: 190px;
+    color: #53A2C1;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.label {
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.card ul.data {
+    position: absolute;
+    top: 73px;
+    left: 190px;
+    color: gray;
+    list-style: none;
+    padding-left: 0;
+}
+
+.card ul.data li {
+    padding-top: 6px;
+    font-size: 16px;
+}
