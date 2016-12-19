@@ -2,8 +2,10 @@ var library = (function () {
     'use strict';
 
     var api = {
-            forEach: each,
+            forEach: forEach,
             filter: filter,
+            map: map,
+            reduce: reduce,
             on: function (element, event, callback, context) {
                 element.addEventListener(event, bind(context || element, callback));
             },
@@ -16,27 +18,65 @@ var library = (function () {
         },
         baseNamespace = {};
 
-    function each(arr, callback) {
-        for (var index = 0; index < arr.length; index++) {
-            callback(arr[index], index);
+    function forEach(target, callback, context) {
+        if (Array.prototype.forEach && target.forEach === Array.prototype.forEach) {
+            target.forEach(callback, context);
+        } else if (target.length === +target.length) {
+            for (var index = 0, length = target.length; index < length; index++) {
+                callback.call(context, target[index]);
+            }
+        } else {
+            for (var key in target) {
+                if (target.hasOwnProperty(key)) {
+                    callback.call(context, target[key], key);
+                }
+            }
         }
     }
 
-    function filter(arr, predicate) {
+    function map(target, callback, context) {
         var result = [];
+        if (Array.prototype.map && target.map === Array.prototype.map) {
+            return target.map(callback, context);
+        }
+        forEach(target, function (value, index, list) {
+            result.push(callback.call(context, value, index, list));
+        });
+        return result;
+    }
 
-        each(arr, function (element, index) {
-            if (predicate(element)) {
-                result.push(element);
+    function filter(target, callback, context) {
+        var result = [];
+        if (Array.prototype.filter && target.filter === Array.prototype.filter) {
+            return target.filter(callback, context);
+        }
+        forEach(target, function (value, index, list) {
+            if (callback.call(context, value, index, list)) {
+                result.push(value);
             }
         });
         return result;
     }
 
+    function reduce(target, callback, accumulator, contxt) {
+        var hasAccumulator = arguments.length > 2;
+        if ((Array.prototype.reduce && target.reduce) === Array.prototype.reduce) {
+            return hasAccumulator ? target.reduce(callback, accumulator) : target.reduce(callback);
+        }
+        forEach(target, function (value, index, list) {
+            if (!hasAccumulator) {
+                accumulator = value;
+                hasAccumulator = true;
+            } else {
+                accumulator = callback.call(contxt, accumulator, value, index, list);
+            }
+        });
+        return accumulator;
+    }
+
     function namespace(path) {
         var currentNamespace = baseNamespace;
-
-        each(path.split('.'), function (pathElement) {
+        forEach(path.split('.'), function (pathElement) {
             if (currentNamespace[pathElement] === undefined) {
                 currentNamespace[pathElement] = {};
             }
@@ -47,21 +87,16 @@ var library = (function () {
 
     function evaluate(template, data) {
         var result = template;
-
-        for (var key in data) {
-            if (data.hasOwnProperty(key)) {
-                result = result.replace('{{' + key + '}}', data[key]);
-            }
-        }
+        forEach(data, function (value, key) {
+            result = result.replace('{{' + key + '}}', value);
+        });
         return result;
     }
 
     function mix(source, target) {
-        for(var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key];
-            }
-        }
+        forEach(source, function (value, key) {
+            target[key] = source[key];
+        });
         return target;
     }
 
@@ -72,7 +107,8 @@ var library = (function () {
     }
 
     api.extend = (function () {
-        var F = function () {};
+        var F = function () {
+        };
         return function (Base, Subtype) {
             F.prototype = Base.prototype;
             Subtype.prototype = new F();
