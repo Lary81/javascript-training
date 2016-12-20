@@ -21,7 +21,7 @@ var library = (function () {
     function forEach(target, callback, context) {
         if (Array.prototype.forEach && target.forEach === Array.prototype.forEach) {
             target.forEach(callback, context);
-        } else if (target.length === +target.length) {
+        } else if (isArray(target)) {
             for (var index = 0, length = target.length; index < length; index++) {
                 callback.call(context, target[index]);
             }
@@ -56,6 +56,10 @@ var library = (function () {
             }
         });
         return result;
+    }
+
+    function isArray(object) {
+        return Object.prototype.toString.call(object) === '[object Array]';
     }
 
     function reduce(target, callback, accumulator, contxt) {
